@@ -1,13 +1,14 @@
 import datetime
 
 from aiogram import types
+
 # from django.utils.timezone import localtime
 
 
 # localtime()
 today = datetime.datetime.today().day
 SET_DATE = [
-    (today+x) for x in range(0, 7)
+    (today + x) for x in range(0, 7)
 ]
 
 SET_TIME = [
@@ -23,7 +24,7 @@ SET_TIME = [
 def get_keyboard_change_fab_back(callback_keyboard):
     buttons = [
         types.InlineKeyboardButton(text="🔙 Вернутся назад",
-                                   callback_data=callback_keyboard.new(action="back", value="None"))
+                                   callback_data=callback_keyboard.new(action="back", value=""))
     ]
     keyboard = types.InlineKeyboardMarkup(row_width=1)
     keyboard.add(*buttons)
@@ -33,11 +34,11 @@ def get_keyboard_change_fab_back(callback_keyboard):
 def get_keyboard_fab_for_start(callback_keyboard):
     buttons = [
         types.InlineKeyboardButton(text="Записаться к нам",
-                                   callback_data=callback_keyboard.new(action="sign_up", value="None")),
+                                   callback_data=callback_keyboard.new(action="sign_up", value="")),
         types.InlineKeyboardButton(text="Посмотреть свои записи",
-                                   callback_data=callback_keyboard.new(action="your_recordings", value="None")),
+                                   callback_data=callback_keyboard.new(action="your_recordings", value="")),
         types.InlineKeyboardButton(text="О нас",
-                                   callback_data=callback_keyboard.new(action="about_us", value="None"))
+                                   callback_data=callback_keyboard.new(action="about_us", value=""))
     ]
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keyboard.add(*buttons)
@@ -47,13 +48,13 @@ def get_keyboard_fab_for_start(callback_keyboard):
 def get_keyboard_select_procedures(callback_keyboard):
     buttons = [
         types.InlineKeyboardButton(text="Мейкап",
-                                   callback_data=callback_keyboard.new(action="make_up", value="None")),
+                                   callback_data=callback_keyboard.new(action="make_up", value="")),
         types.InlineKeyboardButton(text="Покраска волос",
-                                   callback_data=callback_keyboard.new(action="hair_coloring", value="None")),
+                                   callback_data=callback_keyboard.new(action="hair_coloring", value="")),
         types.InlineKeyboardButton(text="Маникюр",
-                                   callback_data=callback_keyboard.new(action="manicure", value="None")),
+                                   callback_data=callback_keyboard.new(action="manicure", value="")),
         types.InlineKeyboardButton(text="🔙 Вернутся назад",
-                                   callback_data=callback_keyboard.new(action="back", value="None"))
+                                   callback_data=callback_keyboard.new(action="back", value=""))
     ]
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(*buttons)
@@ -64,9 +65,9 @@ def get_keyboard_sign_up(callback_keyboard):
     buttons = [
         types.InlineKeyboardButton(
             text="Записаться на удобное время",
-            callback_data=callback_keyboard.new(action="select_date", value="None")),
+            callback_data=callback_keyboard.new(action="select_date", value="")),
         types.InlineKeyboardButton(text="🔚 В начало",
-                                   callback_data=callback_keyboard.new(action="back", value="None"))
+                                   callback_data=callback_keyboard.new(action="back", value=""))
     ]
     keyboard = types.InlineKeyboardMarkup(row_width=1)
     keyboard.add(*buttons)
@@ -74,8 +75,13 @@ def get_keyboard_sign_up(callback_keyboard):
 
 
 def get_keyboard_select_date(callback_keyboard):
-    buttons = [types.InlineKeyboardButton(
-        text="🔚 В начало", callback_data=callback_keyboard.new(action="back", value="None"))]
+    buttons = [
+        types.InlineKeyboardButton(
+            text="🔚 В начало", callback_data=callback_keyboard.new(action="back", value="")),
+        types.InlineKeyboardButton(
+            text="🔙 Выбрать процедуру",
+            callback_data=callback_keyboard.new(action="back_to_select_procedures", value="")),
+    ]
     for my_date in SET_DATE:
         buttons.append(types.InlineKeyboardButton(
             text=f"{my_date}", callback_data=callback_keyboard.new(action="make_an_appointment", value=my_date)))
@@ -89,9 +95,24 @@ def get_keyboard_make_an_appointment(callback_keyboard):
     for my_time in SET_TIME:
         buttons.append(types.InlineKeyboardButton(
             text=f"{my_time}",
-            callback_data=callback_keyboard.new(action="specify_name", value=my_time)))
+            callback_data=callback_keyboard.new(action="personal_data", value=my_time)))
     buttons.append(types.InlineKeyboardButton(text="🔚 В начало",
-                                              callback_data=callback_keyboard.new(action="back", value="None")))
+                                              callback_data=callback_keyboard.new(action="back", value="")))
+    buttons.append(types.InlineKeyboardButton(text="🔙 Изменить день",
+                                              callback_data=callback_keyboard.new(
+                                                  action="back_to_select_date", value="")))
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(*buttons)
+    return keyboard
+
+
+def get_keyboard_personal_data(callback_keyboard):
+    buttons = [
+        types.InlineKeyboardButton(text="✅ Согласен на обработку ПД",
+                                   callback_data=callback_keyboard.new(action="specify_name", value="")),
+        types.InlineKeyboardButton(text="🔚 В начало",
+                                   callback_data=callback_keyboard.new(action="back", value=""))
+    ]
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(*buttons)
     return keyboard
