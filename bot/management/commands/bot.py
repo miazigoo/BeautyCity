@@ -29,6 +29,7 @@ async def main():
     register_handlers_procedures(dp)
 
     # Запуск поллинга
+    
     await dp.skip_updates()  # пропуск накопившихся апдейтов (необязательно)
     await dp.start_polling()
 
