@@ -20,7 +20,7 @@ class Salons(models.Model):
     
     class Meta:
         verbose_name = "Салон"
-        verbose_name_pliral = "Салоны"
+        verbose_name_plural = "Салоны"
 
 
 class Procedures(models.Model):
@@ -38,7 +38,7 @@ class Masters(models.Model):
         max_length=255,
         verbose_name="Имя мастера",
         )
-    phone = models.PhoneNumberField(
+    phone = PhoneNumberField(
         blank=True,
         null=True,
         verbose_name="Контактный номер мастера"
@@ -56,7 +56,7 @@ class Masters(models.Model):
         )
 
 
-class Clients(UUIDMixin, TimeStampedMixin):
+class Clients(models.Model):
     telegram_id = models.IntegerField(unique=True)
     username = models.CharField(
         max_length=64,
@@ -117,6 +117,7 @@ class Appointments(models.Model):
         Salons,
         verbose_name="Салон",
         related_name="salon_appoinments",
+        on_delete=models.DO_NOTHING
         )
     appointment_datetime = models.DateTimeField(
         verbose_name="Дата и время записи на услугу",
@@ -127,3 +128,9 @@ class Appointments(models.Model):
         related_name="procedure_appointments",
         on_delete=models.DO_NOTHING
         )
+    master = models.ForeignKey(
+        Masters,
+        verbose_name="Мастер",
+        related_name="master_appointments",
+        on_delete=models.DO_NOTHING
+    )
