@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import models
 
 from phonenumber_field.modelfields import PhoneNumberField
@@ -31,6 +33,13 @@ class Procedures(models.Model):
     price = models.IntegerField(
         verbose_name="Стоимость услуги"
         )
+    
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Услуга"
+        verbose_name_plural = "Услуги"
 
 
 class Masters(models.Model):
@@ -43,17 +52,22 @@ class Masters(models.Model):
         null=True,
         verbose_name="Контактный номер мастера"
         )
-    salon = models.ForeignKey(
-        Salons,
-        on_delete=models.DO_NOTHING,
-        verbose_name="Салон работы мастера",
-        related_name="masters"
-        )
     procedure = models.ManyToManyField(
         Procedures,
         verbose_name="Услуга, предоставляемая мастером",
-        related_name="procedures"
+        related_name="masters",
+        on_delete=models.DO_NOTHING
         )
+
+    def __str__(self):
+        return self.name
+
+    def display_procedures(self):
+        return ', '.join([str(procedure.name) for procedure in self.procedure.all()])
+
+    class Meta:
+        verbose_name = "Мастер"
+        verbose_name_plural = "Мастера"
 
 
 class Clients(models.Model):
@@ -109,6 +123,8 @@ class Clients(models.Model):
 class Appointments(models.Model):
     client = models.ForeignKey(
         Clients,
+        null=True,
+        blank=True,
         verbose_name="Клиент",
         related_name="client_appointments",
         on_delete=models.DO_NOTHING
@@ -119,11 +135,18 @@ class Appointments(models.Model):
         related_name="salon_appoinments",
         on_delete=models.DO_NOTHING
         )
-    appointment_datetime = models.DateTimeField(
-        verbose_name="Дата и время записи на услугу",
+    appointment_date = models.DateField(
+        verbose_name="Дата записи на услугу",
+        default=datetime.datetime.today()
+        )
+    appointment_time = models.TimeField(
+        verbose_name="Время записи на услугу",
+        default=datetime.datetime.now()
         )
     procedure = models.ForeignKey(
         Procedures,
+        null=True,
+        blank=True,
         verbose_name="Запись на услугу",
         related_name="procedure_appointments",
         on_delete=models.DO_NOTHING
@@ -134,3 +157,10 @@ class Appointments(models.Model):
         related_name="master_appointments",
         on_delete=models.DO_NOTHING
     )
+
+    def __str__(self):
+        return f"{self.appointment_date} {self.appointment_time}, {self.master}"
+
+    class Meta:
+        verbose_name = "Запись к мастеру"
+        verbose_name_plural = "Записи к мастерам"
