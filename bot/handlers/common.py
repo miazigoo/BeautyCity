@@ -32,7 +32,6 @@ async def cmd_start(message: types.Message, state: FSMContext):
 
 async def callbacks_change_fab(call: types.CallbackQuery, callback_data: dict):
     action = callback_data["action"]
-    print(action)
     if action == "sign_up":
         await update_text_fab(call.message, 'Отлично! Выберете процедуру:', get_keyboard_select_procedures)
     elif action == "your_recordings":
