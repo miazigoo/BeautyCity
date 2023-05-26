@@ -14,7 +14,7 @@ from aiogram.utils.exceptions import MessageNotModified
 from bot.text.start_text import START_TEXT
 from asgiref.sync import sync_to_async
 from bot.text.about_us import ABOUT_US
-from channels.db import database_sync_to_async
+# from channels.db import database_sync_to_async
 from django.utils.timezone import localtime
 
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
