@@ -15,7 +15,6 @@ class MastersInline(admin.TabularInline):
 
 @admin.register(Appointments)
 class AppointmentAdmin(admin.ModelAdmin):
-    # fields = ['appointment_date', 'appointment_time', 'master', 'procedure', 'salon', 'client']
     fieldsets = [("Дата и время процедуры", {"fields": ["appointment_date", "appointment_time"]}),
                  ("Место и испольнитель", {"fields": ["master", "salon"]}),
                  (None, {"fields": ["procedure", "client"]})]
@@ -24,7 +23,11 @@ class AppointmentAdmin(admin.ModelAdmin):
 
 @admin.register(Masters)
 class MastersAdmin(admin.ModelAdmin):
-    fields = ["name", "phone"]
+    fieldsets = [("Контактные данные", {"fields": ["name", "phone"]}),
+            # ("Услуги", {"fields": ("MastersInline")}),
+            ("Расписание по неделе", {"fields": ["mon", "tue", "wed", "thu", "fry", "sat", "sun"]}),
+            ]
+
     list_display = ("name", "display_procedures")
     inlines = [MastersInline]
 

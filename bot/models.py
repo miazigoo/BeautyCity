@@ -56,7 +56,42 @@ class Masters(models.Model):
         Procedures,
         verbose_name="Услуга, предоставляемая мастером",
         related_name="masters",
-        on_delete=models.DO_NOTHING
+        # on_delete=models.DO_NOTHING
+        )
+    mon = models.BooleanField(
+        verbose_name="Понедельник",
+        default=True,
+        blank=True,
+        )
+    tue = models.BooleanField(
+        verbose_name="Вторник",
+        default=True,
+        blank=True,
+        )
+    wed = models.BooleanField(
+        verbose_name="Среда",
+        default=True,
+        blank=True,
+        )
+    thu = models.BooleanField(
+        verbose_name="Черверг",
+        default=True,
+        blank=True,
+        )
+    fry = models.BooleanField(
+        verbose_name="Пятница",
+        default=True,
+        blank=True,
+        )
+    sat = models.BooleanField(
+        verbose_name="Суббота",
+        default=True,
+        blank=True,
+        )
+    sun = models.BooleanField(
+        verbose_name="Воскресенье",
+        default=True,
+        blank=True,
         )
 
     def __str__(self):
@@ -121,6 +156,19 @@ class Clients(models.Model):
 
 
 class Appointments(models.Model):
+    set_time = (
+        (datetime.time(10,0,0), "10:00"), (datetime.time(10,30,0), "10:30"),
+        (datetime.time(11,0,0), "11:00"), (datetime.time(11,30,0), "11:30"),
+        (datetime.time(12,0,0), "12:00"), (datetime.time(12,30,0), "12:30"),
+        (datetime.time(13,0,0), "13:00"), (datetime.time(13,30,0), "13:30"),
+        (datetime.time(14,0,0), "14:00"), (datetime.time(14,30,0), "14:30"),
+        (datetime.time(15,0,0), "15:00"), (datetime.time(15,30,0), "15:30"),
+        (datetime.time(16,0,0), "16:00"), (datetime.time(16,30,0), "16:30"),
+        (datetime.time(17,0,0), "17:00"), (datetime.time(17,30,0), "17:30"),
+        (datetime.time(18,0,0), "18:00"), (datetime.time(18,30,0), "18:30"),
+        (datetime.time(19,0,0), "19:00"), (datetime.time(19,30,0), "19:30"),
+        (datetime.time(20,0,0), "20:00"), (datetime.time(20,30,0), "20:30"),
+        )
     client = models.ForeignKey(
         Clients,
         null=True,
@@ -141,7 +189,7 @@ class Appointments(models.Model):
         )
     appointment_time = models.TimeField(
         verbose_name="Время записи на услугу",
-        default=datetime.datetime.now()
+        choices=set_time,
         )
     procedure = models.ForeignKey(
         Procedures,
@@ -157,6 +205,10 @@ class Appointments(models.Model):
         related_name="master_appointments",
         on_delete=models.DO_NOTHING
     )
+
+    # def choices(self):
+    #     if self.appointment_date == datetime.datetime.today():
+
 
     def __str__(self):
         return f"{self.appointment_date} {self.appointment_time}, {self.master}"
