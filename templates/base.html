@@ -2,72 +2,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="stylesheet" href="{% static 'style.css' %}">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+  <title>Оплата</title>
 </head>
 <body>
-    <div id="card-success" class="hidden">
-      <i class="fa fa-check"></i>
-      <p>Payment Successful!</p>
-    </div>
-    <div id="form-errors" class="hidden">
-      <i class="fa fa-exclamation-triangle"></i>
-      <p id="card-error">Card error</p>
-    </div>
-    <div id="form-container">
-
-      <div id="card-front">
-        <div id="shadow"></div>
-        <div id="image-container">
-          <span id="amount">paying: <strong>$99</strong></span>
-          <span id="card-image">
-
-            </span>
+  <div class="container">
+    <div class="row mt-4">
+      <div class="card mb-6" style="width: 42rem;">
+        <h3 class="text-center">Оплата услуг салона "Beauty City"</h4>
+        <form method="POST" action="https://yoomoney.ru/quickpay/confirm.xml">
+          <div class="col-sm-8 mt-10">
+          <label class="col-sm-16 col-form-label">Сумма услуги ₽</label>
+          <input type="text" value=1000 class="form-control bg-info">
+          <label class="col-sm-12 col-form-label">ЮMoney №</label>
+          <input type="text" name="receiver" value="4100117804701310" class="form-control bg-info" readonly>
         </div>
-        <!--- end card image container --->
-
-        <label for="card-number">
-            Card Number
-          </label>
-        <input type="text" id="card-number" placeholder="1234 5678 9101 1112" length="16">
-        <div id="cardholder-container">
-          <label for="card-holder">Card Holder
-          </label>
-          <input type="text" id="card-holder" placeholder="e.g. John Doe" />
+        <div class="form-group form-check mt-4">
+          <input type="radio" name="paymentType" value="PC" class="form-check-input bg-primary">
+          <label class="form-check-label">ЮMoney Деньгами</label>
         </div>
-        <!--- end card holder container --->
-        <div id="exp-container">
-          <label for="card-exp">
-              Expiration
-            </label>
-          <input id="card-month" type="text" placeholder="MM" length="2">
-          <input id="card-year" type="text" placeholder="YY" length="2">
-        </div>
-            <div id="cvc-container">
-          <label for="card-cvc"> CVC/CVV</label>
-          <input id="card-cvc" placeholder="XXX-X" type="text" min-length="3" max-length="4">
-          <p>Last 3 or 4 digits</p>
-        </div>
-        <!--- end CVC container --->
-        <!--- end exp container --->
+      <div class="form-group form-check mt-4">
+        <input type="radio" name="paymentType" value="AC" class="form-check-input bg-primary">
+        <label class="form-check-label">Банковской картой</label>
       </div>
-      <!--- end card front --->
-      <div id="card-back">
-        <div id="card-stripe">
-        </div>
-
-      </div>
-      <!--- end card back --->
-      <input type="text" id="card-token" />
-      <button type="button" id="card-btn">Submit</button>
-
+      <h4 class="text-center"> О покупателе </h4>
+      <div class="col-sm-8 mt-3">
+        <input type="text" class="form-control mb-4 bg-info" placeholder="Имя покупателя ">
+        <input type="text" class="form-control mb-4 bg-info" placeholder="Номер телефона">
+        <input type="submit" value="Перевести 1000 р" class="btn btn-info">
+      </form>  
     </div>
-    <!--- end form container --->
+    <h6 class="mt-5"> Вы будете перенаправлены на защитный протокол для оплаты в Юkassa </h6>
+  </div>
+  </div>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-    <script type="text/javascript" src="https://js.stripe.com/v2/"></script>
-    <script src="https://use.fontawesome.com/f1e0bf0cbc.js"></script>
-    <script src="{% static 'style.js' %}"></script>
+<script src="{% static 'bootstrap.bundle.min.js' %}"></script>
 </body>
 </html>
