@@ -6,12 +6,6 @@ from aiogram import types
 
 
 # localtime()
-
-SET_DATE = []
-for my_day in range(0, 7):
-    SET_DATE.append(
-        (datetime.datetime.now() + datetime.timedelta(days=my_day)).strftime("%m.%d")
-    )
 PROCEDURES = [
     "Мейкап",
     "Покраска волос",
@@ -132,22 +126,6 @@ def get_keyboard_sign_up(callback_keyboard):
                                    callback_data=callback_keyboard.new(action="back", value=""))
     ]
     keyboard = types.InlineKeyboardMarkup(row_width=2)
-    keyboard.add(*buttons)
-    return keyboard
-
-
-def get_keyboard_select_date(callback_keyboard):
-    buttons = [
-        types.InlineKeyboardButton(
-            text="🔚 В начало", callback_data=callback_keyboard.new(action="back", value="")),
-        types.InlineKeyboardButton(
-            text="🔙 Выбрать процедуру",
-            callback_data=callback_keyboard.new(action="back_to_select_procedures", value="")),
-    ]
-    for my_date in SET_DATE:
-        buttons.append(types.InlineKeyboardButton(
-            text=f"{my_date}", callback_data=callback_keyboard.new(action="make_an_appointment", value=my_date)))
-    keyboard = types.InlineKeyboardMarkup()
     keyboard.add(*buttons)
     return keyboard
 

@@ -26,7 +26,10 @@ USERS_DATA = {}
 
 @sync_to_async(thread_sensitive=True)
 def get_all_weekends(date):
-    return Weekend.objects.get_or_none(not_work_date=date)
+    for weekend in Weekend.objects.filter(not_work_date=date.date()):
+        not_work_date = weekend.not_work_date
+        master = weekend.employee
+        return not_work_date, master
 
 
 class PersonalData(StatesGroup):
@@ -150,12 +153,19 @@ async def nav_cal_handler(callback: types.CallbackQuery, callback_data: dict):
 
 async def process_simple_calendar(callback_query: CallbackQuery, callback_data: dict):
     selected, date = await SimpleCalendar().process_selection(callback_query, callback_data)
-    print(callback_data)
-
-    print(today.date(), "and", date.date())
-    print(USERS_DATA)
     print('selected', selected)
     if selected:
+        # not_work_date, master = get_all_weekends(date) or None
+        w = []
+        async for weekend in Weekend.objects.filter(not_work_date=date.date()):
+            w.append(weekend)
+        print('w == ', w)
+        try:
+            not_work_date = w[0].not_work_date or None
+            employee = str(w[0].employee) or None
+        except IndexError:
+            not_work_date = None
+            employee = None
         USERS_DATA['date'] = date.date()
         print('USERS_DATA[date]', USERS_DATA['date'], '\n', USERS_DATA)
         if date.date() < today.date():
@@ -163,24 +173,20 @@ async def process_simple_calendar(callback_query: CallbackQuery, callback_data: 
                    "💃️Но мы можем шагнуть в будущее.\n📅 Выберете удобный для вас день:"
             await callback_query.message.edit_text(text,
                                                    reply_markup=await SimpleCalendar().start_calendar())
-        elif date.date() >= today.date():
-            async for weekend in Weekend.objects.filter(not_work_date=date.date()):
-                not_work_date = weekend.not_work_date
-                employee = weekend.employee
-                if USERS_DATA.get('specialist'):
-                    if str(employee) != USERS_DATA.get('specialist'):
-                        await update_text_fab(callback_query.message,
-                                              '📅 Выберете удобное время!!!:',
-                                              get_keyboard_appointment_have_choose_specialist)
-                    elif str(employee) == USERS_DATA.get('specialist'):
-                        text = f"У мастера {USERS_DATA.get('specialist')} в этот день выходной.\n" \
-                               "📅 Выберете другой удобный для вас день или другого мастера:"
-                        await update_text_fab(callback_query.message,
-                                              text, get_keyboard_navigation_calendar)
-
-                else:
-                    await update_text_fab(callback_query.message,
-                                          '📅 Выберете удобное время:', get_keyboard_make_an_appointment)
+        else:
+            if not_work_date == date.date() and employee == USERS_DATA.get('specialist'):
+                text = f"У мастера {USERS_DATA.get('specialist')} в этот день выходной.\n" \
+                       "📅 Выберете другой удобный для вас день или другого мастера:"
+                await update_text_fab(callback_query.message,
+                                      text, get_keyboard_navigation_calendar)
+                print('not_work_date', not_work_date, 'and', date.date())
+            elif USERS_DATA.get('specialist'):
+                await update_text_fab(callback_query.message,
+                                      '📅 Выберете удобное время!!!:',
+                                      get_keyboard_appointment_have_choose_specialist)
+            elif not USERS_DATA.get('specialist'):
+                await update_text_fab(callback_query.message,
+                                      '📅 Выберете удобное время: else', get_keyboard_make_an_appointment)
 
     await callback_query.answer()
 
