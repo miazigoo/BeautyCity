@@ -7,7 +7,6 @@ from aiogram import Bot, Dispatcher, types
 from bot.handlers.common import register_handlers_common
 from bot.handlers.procedures import register_handlers_procedures
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -29,7 +28,7 @@ async def main():
     register_handlers_procedures(dp)
 
     # Запуск поллинга
-    
+
     await dp.skip_updates()  # пропуск накопившихся апдейтов (необязательно)
     await dp.start_polling()
 
@@ -41,4 +40,3 @@ class BotCommand(BaseCommand):
 
     # Запуск бота
     asyncio.run(main())
-

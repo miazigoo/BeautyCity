@@ -45,12 +45,25 @@ def get_keyboard_choose_specialist(callback_keyboard):
     return keyboard
 
 
+def get_keyboard_navigation_calendar(callback_keyboard):
+    buttons = [
+        types.InlineKeyboardButton(
+            text="Записаться на удобное время",
+            callback_data=callback_keyboard.new(action="navigation_calendar", value="")),
+        types.InlineKeyboardButton(text="🔚 В начало",
+                                   callback_data=callback_keyboard.new(action="back", value=""))
+    ]
+    keyboard = types.InlineKeyboardMarkup(row_width=1)
+    keyboard.add(*buttons)
+    return keyboard
+
+
 def get_keyboard_choose_specialist_before_change_date(callback_keyboard):
     buttons = [
         types.InlineKeyboardButton(text=f"✅ Мастер {specialist[0]}",
-                                   callback_data=callback_keyboard.new(action="select_date", value=specialist[0])),
+                                   callback_data=callback_keyboard.new(action="navigation_calendar", value=specialist[0])),
         types.InlineKeyboardButton(text=f"✅ Мастер {specialist[1]}",
-                                   callback_data=callback_keyboard.new(action="select_date", value=specialist[1])),
+                                   callback_data=callback_keyboard.new(action="navigation_calendar", value=specialist[1])),
 
         types.InlineKeyboardButton(text="🔚 В начало",
                                    callback_data=callback_keyboard.new(action="back", value=""))
@@ -111,7 +124,7 @@ def get_keyboard_sign_up(callback_keyboard):
     buttons = [
         types.InlineKeyboardButton(
             text="Записаться на удобное время",
-            callback_data=callback_keyboard.new(action="select_date", value="")),
+            callback_data=callback_keyboard.new(action="navigation_calendar", value="")),
         types.InlineKeyboardButton(text="💁‍♀️Выбрать мастера",
                                    callback_data=callback_keyboard.new(
                                        action="choose_specialist_before_change_date", value="")),
@@ -142,8 +155,9 @@ def get_keyboard_select_date(callback_keyboard):
 def get_keyboard_make_an_appointment(callback_keyboard):
     buttons = []
     for my_time in SET_TIME:
+        time_strip = my_time.replace('_', ":")
         buttons.append(types.InlineKeyboardButton(
-            text=f"{my_time}",
+            text=f"{time_strip}",
             callback_data=callback_keyboard.new(action="choose_specialist", value=my_time)))
     buttons.append(types.InlineKeyboardButton(text="🔚 В начало",
                                               callback_data=callback_keyboard.new(action="back", value="")))
@@ -158,8 +172,9 @@ def get_keyboard_make_an_appointment(callback_keyboard):
 def get_keyboard_appointment_have_choose_specialist(callback_keyboard):
     buttons = []
     for my_time in SET_TIME:
+        time_strip = my_time.replace('_', ":")
         buttons.append(types.InlineKeyboardButton(
-            text=f"{my_time}",
+            text=f"{time_strip}",
             callback_data=callback_keyboard.new(action="personal_data", value=my_time)))
     buttons.append(types.InlineKeyboardButton(text="🔚 В начало",
                                               callback_data=callback_keyboard.new(action="back", value="")))
