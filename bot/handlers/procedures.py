@@ -1,6 +1,6 @@
 import os
 from contextlib import suppress
-from bot.models import Weekend, Salons
+from bot.models import Weekend, Salons, Appointments, Employee, Procedures
 
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import CallbackQuery
@@ -13,6 +13,7 @@ from aiogram.utils.callback_data import CallbackData
 from aiogram.utils.exceptions import MessageNotModified
 from bot.text.start_text import START_TEXT
 from asgiref.sync import sync_to_async
+from bot.text.about_us import ABOUT_US
 from channels.db import database_sync_to_async
 from django.utils.timezone import localtime
 
@@ -22,6 +23,7 @@ callback_keyboard = CallbackData("procedures", "action", "value")
 today = datetime.datetime.today()
 # weekend = sync_to_async(Weekend.objects.all())
 USERS_DATA = {}
+DATE = {}
 
 
 @sync_to_async(thread_sensitive=True)
@@ -51,6 +53,7 @@ async def get_name(message: types.Message, state: FSMContext):
 
 
 async def get_phone(message: types.Message, state: FSMContext):
+    telegram_id = message.chat.id
     user_data = await state.get_data()
     name = user_data['chosen_name']
     phone = message.text
@@ -58,22 +61,51 @@ async def get_phone(message: types.Message, state: FSMContext):
     USERS_DATA['phone'] = phone
     date_of_admission = USERS_DATA['date']
     time_of_admission = USERS_DATA['time']
-    procedures = USERS_DATA.get('procedures')
-    master = USERS_DATA.get('specialist')
+    procedures_data = USERS_DATA.get('procedures')
+    master_data = USERS_DATA.get('specialist')
     adress = ''
-    async for adress in Salons.objects.filter(pk=1):
-        adress = adress
+    salon = None
+    async for procedures in Procedures.objects.filter(name=procedures_data):
+        procedures_data = procedures
+    async for master in Employee.objects.filter(name=master_data):
+        master_data = master
+    async for salon in Salons.objects.filter(pk=1):
+        adress = salon.address
+        salon = salon
+    await Appointments.objects.acreate(
+        telegram_id=telegram_id,
+        name=USERS_DATA['name'],
+        phone_number=phone,
+        salon=salon,
+        appointment_date=date_of_admission,
+        appointment_time=time_of_admission,
+        procedure=procedures_data,
+        master=master_data
+    )
     await message.answer(
         f"Спасибо за запись {name}! До встречи {date_of_admission} {time_of_admission}\n"
-        f"На процедуре {procedures}, у Мастера: {master}\n"
+        f"На процедуре {procedures}, у Мастера: {master_data}\n"
         f"{adress}"
     )
     await state.finish()
 
 
+async def callbacks_change_fab(call: types.CallbackQuery, callback_data: dict):
+    action = callback_data["action"]
+    if action == "sign_up":
+        USERS_DATA.clear()
+        await update_text_fab(call.message, 'Отлично! Выберете процедуру:', get_keyboard_select_procedures)
+    elif action == "your_recordings":
+        await update_text_fab(call.message, 'вы выбрали your_recordings', get_keyboard_fab_for_start)
+    elif action == "about_us":
+        await update_text_fab(call.message, ABOUT_US[action], get_keyboard_change_fab_back)
+    await call.answer()
+
+
 async def callbacks_change_procedures(call: types.CallbackQuery, callback_data: dict):
     action = callback_data["action"]
     if action == "make_up":
+        callback_data["Мейкап"] = "Мейкап"
         USERS_DATA['procedures'] = "Мейкап"
         await update_text_fab(call.message,
                               '💄 Процедура "Мейкап" стоит от 900 Руб.', get_keyboard_sign_up)
@@ -91,8 +123,7 @@ async def callbacks_change_procedures(call: types.CallbackQuery, callback_data: 
 async def callbacks_back(call: types.CallbackQuery, callback_data: dict):
     action = callback_data["action"]
     if action == "back":
-        USERS_DATA = {}
-        print(USERS_DATA)
+        USERS_DATA.clear()
         await update_text_fab(call.message, START_TEXT['start_text'], get_keyboard_fab_for_start)
     await call.answer()
 
@@ -154,6 +185,7 @@ async def nav_cal_handler(callback: types.CallbackQuery, callback_data: dict):
 async def process_simple_calendar(callback_query: CallbackQuery, callback_data: dict):
     selected, date = await SimpleCalendar().process_selection(callback_query, callback_data)
     print('selected', selected)
+    # callback_query.data['selected'] = selected
     if selected:
         # not_work_date, master = get_all_weekends(date) or None
         w = []
@@ -167,6 +199,7 @@ async def process_simple_calendar(callback_query: CallbackQuery, callback_data: 
             not_work_date = None
             employee = None
         USERS_DATA['date'] = date.date()
+        USERS_DATA['today'] = today.date()
         print('USERS_DATA[date]', USERS_DATA['date'], '\n', USERS_DATA)
         if date.date() < today.date():
             text = "🙅‍♀️Нельзя вернуться в прошлое.\n" \
@@ -233,3 +266,12 @@ def register_handlers_procedures(dp: Dispatcher):
         process_simple_calendar,
         simple_cal_callback.filter()
     )
+
+    dp.register_callback_query_handler(
+        callbacks_change_fab,
+        callback_keyboard.filter(action=[
+            "about_us",
+            "your_recordings",
+            "sign_up",
+        ]
+        ))
