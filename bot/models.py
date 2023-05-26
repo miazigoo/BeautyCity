@@ -56,7 +56,7 @@ class Masters(models.Model):
         Procedures,
         verbose_name="Услуга, предоставляемая мастером",
         related_name="masters",
-        on_delete=models.DO_NOTHING
+        # on_delete=models.DO_NOTHING
         )
 
     def __str__(self):
