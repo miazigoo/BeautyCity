@@ -21,10 +21,6 @@ os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 
 callback_keyboard = CallbackData("procedures", "action", "value")
 today = datetime.datetime.today()
-# weekend = sync_to_async(Weekend.objects.all())
-# USERS_DATA = {}
-# DATE = {}
-
 
 # @sync_to_async(thread_sensitive=True)
 # def get_all_weekends(date):
@@ -103,7 +99,7 @@ async def callbacks_change_fab(call: types.CallbackQuery, callback_data: dict):
     action = callback_data["action"]
     if action == "sign_up":
         USERS_DATA.clear()
-        await update_text_fab(call.message, 'Отлично! Выберете процедуру:', get_keyboard_select_procedures)
+        await update_text_fab(call.message, 'Отлично! Выберите процедуру:', get_keyboard_select_procedures)
     elif action == "your_recordings":
         await update_text_fab(call.message, '📝 Ваши записи в нашем Сервисе: ', get_keyboard_recordings)
     elif action == "about_us":
@@ -131,7 +127,13 @@ async def callbacks_back(call: types.CallbackQuery, callback_data: dict):
 def get_keyboard_exclude_specialist(callback_keyboard):
     employee = USERS_DATA.get('employee')
     buttons = []
+    print("Принт 1")
     for master in Employee.objects.exclude(name=employee).filter(procedure__pk=USERS_DATA["procedures"]):
+        print("Принт 2")
+        print(USERS_DATA["time"])
+        print(type(USERS_DATA["time"]))
+        if master in Appointments.objects.filter(appointment_date=USERS_DATA["date"], appointment_time=USERS_DATA["time"]):
+            continue
         buttons.append(
             types.InlineKeyboardButton(text=f"✅ Мастер {master.name}",
                                        callback_data=callback_keyboard.new(action="personal_data",
@@ -139,7 +141,7 @@ def get_keyboard_exclude_specialist(callback_keyboard):
         )
     add_text = ""
     if not buttons:
-        add_text = "В этот день нужные мастера не работают."
+        add_text = "В этот день(время) нет свободных мастеров."
     buttons.append(
         types.InlineKeyboardButton(text=f"{add_text} 🔚 В начало",
                                    callback_data=callback_keyboard.new(action="back", value=""))
@@ -154,7 +156,7 @@ async def callbacks_change_date_time(
 ):
     action = callback_data["action"]
     if action == "back_to_select_procedures":
-        await update_text_fab(call.message, "Выберете процедуру:", get_keyboard_select_procedures)
+        await update_text_fab(call.message, "Выберите процедуру:", get_keyboard_select_procedures)
 
     elif action == "choose_specialist":
         change_time = callback_data["value"].split("_")
@@ -169,16 +171,16 @@ async def callbacks_change_date_time(
                 master_data = master
                 print(master_data)
 
-            text = f"У Мастера: {employee} - выходной. Выберете Мастера:"
+            text = f"У Мастера: {employee} - выходной. Выберите Мастера:"
             await update_text_fab(call.message, text, get_keyboard_exclude_specialist)
         else:
-            await update_text_fab(call.message, "Выберете Мастера:", get_keyboard_choose_specialist)
+            await update_text_fab(call.message, "Выберите Мастера:", get_keyboard_choose_specialist)
 
     elif action == "choose_specialist_before_change_date":
-        await update_text_fab(call.message, "Выберете Мастера:", get_keyboard_choose_specialist_before_change_date)
+        await update_text_fab(call.message, "Выберите Мастера:", get_keyboard_choose_specialist_before_change_date)
 
     elif action == "back_to_select_date":
-        await call.message.edit_text("📅 Выберете удобный для вас день: back_to_select_date",
+        await call.message.edit_text("📅 Выберите удобный для вас день: back_to_select_date",
                                      reply_markup=await SimpleCalendar().start_calendar())
     elif action == "personal_data":
         if not USERS_DATA.get('time'):
@@ -203,13 +205,13 @@ async def nav_cal_handler(callback: types.CallbackQuery, callback_data: dict):
     if action == 'navigation_calendar':
         if not USERS_DATA.get('specialist'):
             USERS_DATA['specialist'] = callback_data["value"]
-            await callback.message.edit_text("📅 Выберете удобный для вас день: navigation_calendar",
+            await callback.message.edit_text("📅 Выберите удобный для вас день: navigation_calendar",
                                              reply_markup=await SimpleCalendar().start_calendar())
         else:
             print('callback_data["value"]', callback_data["value"])
             # USERS_DATA['specialist'] = callback_data["value"]
             await callback.message.edit_text(
-                "📅 Выберете удобный для вас день: await SimpleCalendar().start_calendar()",
+                "📅 Выберите удобный для вас день: await SimpleCalendar().start_calendar()",
                 reply_markup=await SimpleCalendar().start_calendar())
     await callback.answer()
 
@@ -233,23 +235,23 @@ async def process_simple_calendar(callback_query: CallbackQuery, callback_data: 
         print('USERS_DATA[date]', USERS_DATA['date'], '\n', USERS_DATA)
         if date.date() < today.date():
             text = "🙅‍♀️Нельзя вернуться в прошлое.\n" \
-                   "💃️Но мы можем шагнуть в будущее.\n📅 Выберете удобный для вас день:"
+                   "💃️Но мы можем шагнуть в будущее.\n📅 Выберите удобный для вас день:"
             await callback_query.message.edit_text(text,
                                                    reply_markup=await SimpleCalendar().start_calendar())
         else:
             if not_work_date == date.date() and employee == USERS_DATA.get('specialist'):
                 text = f"У мастера {USERS_DATA.get('specialist')} в этот день выходной.\n" \
-                       "📅 Выберете другой удобный для вас день или другого мастера:"
+                       "📅 Выберите другой удобный для вас день или другого мастера:"
                 await update_text_fab(callback_query.message,
                                       text, get_keyboard_navigation_calendar)
                 print('not_work_date', not_work_date, 'and', date.date())
             elif USERS_DATA.get('specialist'):
                 await update_text_fab(callback_query.message,
-                                      '📅 Выберете удобное время!!!:',
+                                      '📅 Выберите удобное время!!!:',
                                       get_keyboard_appointment_have_choose_specialist)
             elif not USERS_DATA.get('specialist'):
                 await update_text_fab(callback_query.message,
-                                      '📅 Выберете удобное время: else', get_keyboard_make_an_appointment)
+                                      '📅 Выберите удобное время: else', get_keyboard_make_an_appointment)
 
     await callback_query.answer()
 

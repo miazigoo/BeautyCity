@@ -111,10 +111,17 @@ def get_keyboard_choose_specialist_before_change_date(callback_keyboard):
 
 def get_keyboard_choose_specialist(callback_keyboard):
     buttons = []
+    users_time = datetime.datetime.strptime(USERS_DATA["time"], "%H:%M").time()
+    overlay = Appointments.objects.filter(appointment_date=USERS_DATA["date"], appointment_time=users_time)[0]
     for master in Employee.objects.filter(procedure__pk=int(USERS_DATA["procedures"])):
+        if master == overlay.master:
+            continue 
         buttons.append(types.InlineKeyboardButton(text=f"✅ Мастер {master.name}",
                         callback_data=callback_keyboard.new(action="personal_data", value=master.pk)))
-    buttons.append(types.InlineKeyboardButton(text="🔚 В начало",
+    add_text = ""
+    if not buttons:
+        add_text = "В это время нет свободных мастеров"
+    buttons.append(types.InlineKeyboardButton(text=f"{add_text} 🔚 В начало",
                         callback_data=callback_keyboard.new(action="back", value="")))
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keyboard.add(*buttons)
@@ -171,7 +178,13 @@ def get_keyboard_make_an_appointment(callback_keyboard):
 def get_keyboard_appointment_have_choose_specialist(callback_keyboard):
     buttons = []
     set_time = get_set_time()
+    appointments = Appointments.objects.filter(appointment_date=USERS_DATA["date"], master__pk=USERS_DATA["specialist"])
+    working_time = []
+    for appointment in appointments:
+        working_time.append(appointment.appointment_time.strftime("%H_%M"))
     for my_time in set_time:
+        if my_time in working_time:
+            continue
         time_strip = my_time.replace('_', ":")
         buttons.append(types.InlineKeyboardButton(
             text=f"{time_strip}",
