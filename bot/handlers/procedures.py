@@ -22,8 +22,8 @@ os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 callback_keyboard = CallbackData("procedures", "action", "value")
 today = datetime.datetime.today()
 # weekend = sync_to_async(Weekend.objects.all())
-USERS_DATA = {}
-DATE = {}
+# USERS_DATA = {}
+# DATE = {}
 
 
 # @sync_to_async(thread_sensitive=True)
@@ -66,9 +66,9 @@ async def get_phone(message: types.Message, state: FSMContext):
     master_data = USERS_DATA.get('specialist')
     adress = ''
     salon = None
-    async for procedures in Procedures.objects.filter(name=procedures_data):
+    async for procedures in Procedures.objects.filter(pk=procedures_data):
         procedures_data = procedures
-    async for master in Employee.objects.filter(name=master_data):
+    async for master in Employee.objects.filter(pk=master_data):
         master_data = master
     async for salon in Salons.objects.filter(pk=1):
         adress = salon.address
@@ -97,23 +97,6 @@ async def get_phone(message: types.Message, state: FSMContext):
 #     return recordings
 
 
-def get_keyboard_recordings(callback_keyboard):
-    user_id = USERS_DATA.get('user_id')
-    recordings = Appointments.objects.filter(telegram_id=user_id)[:10]
-    buttons = []
-    for recording in recordings:
-        text = f'{recording.procedure.name}_{recording.appointment_date.strftime("%m-%d")}_{recording.appointment_time}'
-        buttons.append(
-            types.InlineKeyboardButton(text=f"{text}",
-                                       callback_data=callback_keyboard.new(action="to_recordings", value='')),
-        )
-    buttons.append(types.InlineKeyboardButton(text="🔚 В начало",
-                                              callback_data=callback_keyboard.new(action="back", value="")))
-    keyboard = types.InlineKeyboardMarkup(row_width=2)
-    keyboard.add(*buttons)
-    return keyboard
-
-
 async def callbacks_change_fab(call: types.CallbackQuery, callback_data: dict):
     user_id = call.from_user.id
     USERS_DATA['user_id'] = user_id
@@ -129,20 +112,11 @@ async def callbacks_change_fab(call: types.CallbackQuery, callback_data: dict):
 
 
 async def callbacks_change_procedures(call: types.CallbackQuery, callback_data: dict):
-    action = callback_data["action"]
-    if action == "make_up":
-        callback_data["Мейкап"] = "Мейкап"
-        USERS_DATA['procedures'] = "Мейкап"
-        await update_text_fab(call.message,
-                              '💄 Процедура "Мейкап" стоит от 900 Руб.', get_keyboard_sign_up)
-    elif action == "hair_coloring":
-        USERS_DATA['procedures'] = "Покраска волос"
-        await update_text_fab(call.message,
-                              '🧑🏻‍🎤 Процедура "Покраска волос" стоит от 1200 Руб.', get_keyboard_sign_up)
-    elif action == "manicure":
-        USERS_DATA['procedures'] = "Маникюр"
-        await update_text_fab(call.message,
-                              '💅🏼 Процедура "Маникюр" стоит от 1000 Руб.', get_keyboard_sign_up)
+    value = callback_data["value"]
+    procedure = Procedures.objects.get(pk=int(value))
+    USERS_DATA['procedures'] = procedure.pk
+    await update_text_fab(call.message,
+                    f'Процедура "{procedure.name}" стоит от {procedure.price} руб.', get_keyboard_sign_up)
     await call.answer()
 
 
@@ -157,14 +131,17 @@ async def callbacks_back(call: types.CallbackQuery, callback_data: dict):
 def get_keyboard_exclude_specialist(callback_keyboard):
     employee = USERS_DATA.get('employee')
     buttons = []
-    for master in Employee.objects.exclude(name=employee):
+    for master in Employee.objects.exclude(name=employee).filter(procedure__pk=USERS_DATA["procedures"]):
         buttons.append(
             types.InlineKeyboardButton(text=f"✅ Мастер {master.name}",
                                        callback_data=callback_keyboard.new(action="personal_data",
-                                                                           value=master.name)),
+                                                                           value=master.pk)),
         )
+    add_text = ""
+    if not buttons:
+        add_text = "В этот день нужные мастера не работают."
     buttons.append(
-        types.InlineKeyboardButton(text="🔚 В начало",
+        types.InlineKeyboardButton(text=f"{add_text} 🔚 В начало",
                                    callback_data=callback_keyboard.new(action="back", value=""))
     )
     keyboard = types.InlineKeyboardMarkup(row_width=2)
@@ -293,9 +270,7 @@ def register_handlers_procedures(dp: Dispatcher):
     dp.register_callback_query_handler(
         callbacks_change_procedures,
         callback_keyboard.filter(action=[
-            "make_up",
-            "hair_coloring",
-            "manicure",
+            "procedure",
         ]))
 
     dp.register_callback_query_handler(
