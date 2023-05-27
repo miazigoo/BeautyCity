@@ -22,22 +22,11 @@ SET_TIME = [
     "20_00", "20_30"
 ]
 
-specialist = ['Ольга', 'Татьяна']
+USERS_DATA = {}
 
+DATE = {}
 
-def get_keyboard_choose_specialist(callback_keyboard):
-    buttons = [
-        types.InlineKeyboardButton(text=f"✅ Мастер {specialist[0]}",
-                                   callback_data=callback_keyboard.new(action="personal_data", value=specialist[0])),
-        types.InlineKeyboardButton(text=f"✅ Мастер {specialist[1]}",
-                                   callback_data=callback_keyboard.new(action="personal_data", value=specialist[1])),
-
-        types.InlineKeyboardButton(text="🔚 В начало",
-                                   callback_data=callback_keyboard.new(action="back", value=""))
-    ]
-    keyboard = types.InlineKeyboardMarkup(row_width=2)
-    keyboard.add(*buttons)
-    return keyboard
+# specialist = ['Ольга', 'Татьяна']
 
 
 def get_keyboard_navigation_calendar(callback_keyboard):
@@ -103,6 +92,35 @@ def get_keyboard_select_procedures(callback_keyboard):
     return keyboard
 
 
+def get_keyboard_choose_specialist_before_change_date(callback_keyboard):
+    buttons = []
+    for master in Employee.objects.filter(procedure__pk=int(USERS_DATA["procedures"])):
+        buttons.append(
+            types.InlineKeyboardButton(text=f"✅ Мастер {master.name}",
+                                       callback_data=callback_keyboard.new(action="navigation_calendar",
+                                                                           value=master.pk)),
+        )
+    buttons.append(
+        types.InlineKeyboardButton(text="🔚 В начало",
+                                   callback_data=callback_keyboard.new(action="back", value=""))
+    )
+    keyboard = types.InlineKeyboardMarkup(row_width=2)
+    keyboard.add(*buttons)
+    return keyboard
+
+
+def get_keyboard_choose_specialist(callback_keyboard):
+    buttons = []
+    for master in Employee.objects.filter(procedure__pk=int(USERS_DATA["procedures"])):
+        buttons.append(types.InlineKeyboardButton(text=f"✅ Мастер {master.name}",
+                        callback_data=callback_keyboard.new(action="personal_data", value=master.pk)))
+    buttons.append(types.InlineKeyboardButton(text="🔚 В начало",
+                        callback_data=callback_keyboard.new(action="back", value="")))
+    keyboard = types.InlineKeyboardMarkup(row_width=2)
+    keyboard.add(*buttons)
+    return keyboard
+
+
 def get_keyboard_sign_up(callback_keyboard):
     buttons = [
         types.InlineKeyboardButton(
@@ -119,9 +137,23 @@ def get_keyboard_sign_up(callback_keyboard):
     return keyboard
 
 
+def get_set_time():
+    set_time = []
+    if USERS_DATA["date"] == datetime.datetime.today().date():
+        for slot in SET_TIME:
+            print(SET_TIME)
+            print(slot)
+            if datetime.datetime.now().time() < datetime.time(int(slot.split("_")[0]), int(slot.split("_")[1]), 0):
+                set_time.append(slot)
+        return set_time
+    else:
+        return SET_TIME
+
+
 def get_keyboard_make_an_appointment(callback_keyboard):
     buttons = []
-    for my_time in SET_TIME:
+    set_time = get_set_time()
+    for my_time in set_time:
         time_strip = my_time.replace('_', ":")
         buttons.append(types.InlineKeyboardButton(
             text=f"{time_strip}",
@@ -138,7 +170,8 @@ def get_keyboard_make_an_appointment(callback_keyboard):
 
 def get_keyboard_appointment_have_choose_specialist(callback_keyboard):
     buttons = []
-    for my_time in SET_TIME:
+    set_time = get_set_time()
+    for my_time in set_time:
         time_strip = my_time.replace('_', ":")
         buttons.append(types.InlineKeyboardButton(
             text=f"{time_strip}",
@@ -163,3 +196,22 @@ def get_keyboard_personal_data(callback_keyboard):
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(*buttons)
     return keyboard
+
+
+def get_keyboard_recordings(callback_keyboard):
+    user_id = USERS_DATA.get('user_id')
+    recordings = Appointments.objects.filter(telegram_id=user_id)[:10]
+    buttons = []
+    for recording in recordings:
+        text = f'{recording.procedure.name}_{recording.appointment_date.strftime("%m-%d")}_{recording.appointment_time}'
+        buttons.append(
+            types.InlineKeyboardButton(text=f"{text}",
+                                       callback_data=callback_keyboard.new(action="to_recordings", value='')),
+        )
+    buttons.append(types.InlineKeyboardButton(text="🔚 В начало",
+                                              callback_data=callback_keyboard.new(action="back", value="")))
+    keyboard = types.InlineKeyboardMarkup(row_width=2)
+    keyboard.add(*buttons)
+    return keyboard
+
+
