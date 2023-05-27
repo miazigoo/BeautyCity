@@ -6,34 +6,33 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
   <title>Оплата</title>
 </head>
 <body>
   <div class="container">
     <div class="row mt-4">
-      <div class="card mb-6" style="width: 38rem;">
+      <div class="card card text-bg-secondary mb-6" style="width: 38rem;">
         <h3 class="text-center">Оплата услуг салона "Beauty City"</h3>
         <form method="POST" action="https://yoomoney.ru/quickpay/confirm.xml">
           <div class="col-sm-8 mt-10">
           <label class="col-sm-16 col-form-label">Сумма услуги ₽</label>
-          <input type="text" value=1000 class="form-control bg-info">
+          <input type="text" value="{{ price }}" class="form-control bg-info">
           <label class="col-sm-12 col-form-label">ЮMoney №</label>
           <input type="text" name="receiver" value="4100117804701310" class="form-control bg-info" readonly>
         </div>
         <div class="form-group form-check mt-4">
-          <input type="radio" name="paymentType" value="PC" class="form-check-input bg-primary">
+          <input type="radio" name="paymentType" value="PC" class="form-check-input">
           <label class="form-check-label">ЮMoney Деньгами</label>
         </div>
       <div class="form-group form-check mt-4">
-        <input type="radio" name="paymentType" value="AC" class="form-check-input bg-primary">
+        <input type="radio" name="paymentType" value="AC" class="form-check-input">
         <label class="form-check-label">Банковской картой</label>
       </div>
       <h4 class="text-center"> О покупателе </h4>
       <div class="col-sm-8 mt-3">
-        <input type="text" class="form-control mb-4 bg-info" placeholder="Имя покупателя ">
-        <input type="text" class="form-control mb-4 bg-info" placeholder="Номер телефона">
-        <input type="submit" value="Перевести 1000 р" class="btn btn-info">
+        <input type="text" class="form-control mb-4 bg-info" value="{{ client_name }}">
+        <input type="text" class="form-control mb-4 bg-info"  value="{{ client_phone}}" >
+        <input type="submit" value="Перевести {{ price}} р " class="btn btn-info">
       </div>
       </form>
     </div>
@@ -42,6 +41,5 @@
   </div>
 
 <script src="{% static 'bootstrap.bundle.min.js' %}"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 </body>
 </html>
