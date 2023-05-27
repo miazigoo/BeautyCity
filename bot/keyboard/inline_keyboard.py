@@ -53,23 +53,6 @@ def get_keyboard_navigation_calendar(callback_keyboard):
     return keyboard
 
 
-def get_keyboard_choose_specialist_before_change_date(callback_keyboard):
-    buttons = []
-    for master in Employee.objects.all():
-        buttons.append(
-            types.InlineKeyboardButton(text=f"✅ Мастер {master.name}",
-                                       callback_data=callback_keyboard.new(action="navigation_calendar",
-                                                                           value=master.name)),
-        )
-    buttons.append(
-        types.InlineKeyboardButton(text="🔚 В начало",
-                                   callback_data=callback_keyboard.new(action="back", value=""))
-    )
-    keyboard = types.InlineKeyboardMarkup(row_width=2)
-    keyboard.add(*buttons)
-    return keyboard
-
-
 def get_keyboard_change_fab_back(callback_keyboard):
     buttons = [
         types.InlineKeyboardButton(text="🔙 Вернутся назад",

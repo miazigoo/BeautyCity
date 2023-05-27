@@ -131,7 +131,8 @@ async def callbacks_change_fab(call: types.CallbackQuery, callback_data: dict):
 async def callbacks_change_procedures(call: types.CallbackQuery, callback_data: dict):
     value = callback_data["value"]
     procedure = Procedures.objects.get(pk=int(value))
-    USERS_DATA['procedures'] = procedure.name
+    USERS_DATA['procedures'] = procedure.pk
+    # callback_data["procedures"] = procedure.pk
     await update_text_fab(call.message,
                     f'Процедура "{procedure.name}" стоит от {procedure.price} руб.', get_keyboard_sign_up)
     await call.answer()
@@ -152,6 +153,23 @@ def get_keyboard_exclude_specialist(callback_keyboard):
         buttons.append(
             types.InlineKeyboardButton(text=f"✅ Мастер {master.name}",
                                        callback_data=callback_keyboard.new(action="personal_data",
+                                                                           value=master.name)),
+        )
+    buttons.append(
+        types.InlineKeyboardButton(text="🔚 В начало",
+                                   callback_data=callback_keyboard.new(action="back", value=""))
+    )
+    keyboard = types.InlineKeyboardMarkup(row_width=2)
+    keyboard.add(*buttons)
+    return keyboard
+
+
+def get_keyboard_choose_specialist_before_change_date(callback_keyboard):
+    buttons = []
+    for master in Employee.objects.filter(procedure__pk=int(USERS_DATA["procedures"])):
+        buttons.append(
+            types.InlineKeyboardButton(text=f"✅ Мастер {master.name}",
+                                       callback_data=callback_keyboard.new(action="navigation_calendar",
                                                                            value=master.name)),
         )
     buttons.append(
