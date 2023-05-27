@@ -102,16 +102,19 @@ def get_keyboard_fab_for_start(callback_keyboard):
 
 
 def get_keyboard_select_procedures(callback_keyboard):
-    buttons = [
-        types.InlineKeyboardButton(text="Мейкап",
-                                   callback_data=callback_keyboard.new(action="make_up", value="")),
-        types.InlineKeyboardButton(text="Покраска волос",
-                                   callback_data=callback_keyboard.new(action="hair_coloring", value="")),
-        types.InlineKeyboardButton(text="Маникюр",
-                                   callback_data=callback_keyboard.new(action="manicure", value="")),
-        types.InlineKeyboardButton(text="🔙 Вернутся назад",
-                                   callback_data=callback_keyboard.new(action="back", value=""))
-    ]
+    procedures = Procedures.objects.all()
+    buttons = []
+    for procedure in procedures:
+        text = procedure.name
+        value = procedure.pk
+        buttons.append(
+            types.InlineKeyboardButton(text=text,
+            callback_data=callback_keyboard.new(action="procedure", value=value))
+            )
+    buttons.append(
+        types.InlineKeyboardButton(text="🔚 В начало",
+        callback_data=callback_keyboard.new(action="back", value=""))
+        )
     keyboard = types.InlineKeyboardMarkup()
     keyboard.add(*buttons)
     return keyboard

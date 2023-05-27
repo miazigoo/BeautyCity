@@ -129,20 +129,11 @@ async def callbacks_change_fab(call: types.CallbackQuery, callback_data: dict):
 
 
 async def callbacks_change_procedures(call: types.CallbackQuery, callback_data: dict):
-    action = callback_data["action"]
-    if action == "make_up":
-        callback_data["Мейкап"] = "Мейкап"
-        USERS_DATA['procedures'] = "Мейкап"
-        await update_text_fab(call.message,
-                              '💄 Процедура "Мейкап" стоит от 900 Руб.', get_keyboard_sign_up)
-    elif action == "hair_coloring":
-        USERS_DATA['procedures'] = "Покраска волос"
-        await update_text_fab(call.message,
-                              '🧑🏻‍🎤 Процедура "Покраска волос" стоит от 1200 Руб.', get_keyboard_sign_up)
-    elif action == "manicure":
-        USERS_DATA['procedures'] = "Маникюр"
-        await update_text_fab(call.message,
-                              '💅🏼 Процедура "Маникюр" стоит от 1000 Руб.', get_keyboard_sign_up)
+    value = callback_data["value"]
+    procedure = Procedures.objects.get(pk=int(value))
+    USERS_DATA['procedures'] = procedure.name
+    await update_text_fab(call.message,
+                    f'Процедура "{procedure.name}" стоит от {procedure.price} руб.', get_keyboard_sign_up)
     await call.answer()
 
 
@@ -293,9 +284,7 @@ def register_handlers_procedures(dp: Dispatcher):
     dp.register_callback_query_handler(
         callbacks_change_procedures,
         callback_keyboard.filter(action=[
-            "make_up",
-            "hair_coloring",
-            "manicure",
+            "procedure",
         ]))
 
     dp.register_callback_query_handler(
