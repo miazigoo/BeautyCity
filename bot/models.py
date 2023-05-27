@@ -82,7 +82,7 @@ class Weekend(models.Model):
 
 
 class Appointments(models.Model):
-    telegram_id = models.IntegerField(unique=True)
+    telegram_id = models.IntegerField()
     name = models.CharField(
         max_length=256,
         null=True,

@@ -1,6 +1,7 @@
 import datetime
 
 from aiogram import types
+from bot.models import Weekend, Salons, Appointments, Employee, Procedures
 
 # from django.utils.timezone import localtime
 
@@ -42,7 +43,7 @@ def get_keyboard_choose_specialist(callback_keyboard):
 def get_keyboard_navigation_calendar(callback_keyboard):
     buttons = [
         types.InlineKeyboardButton(
-            text="Записаться на удобное время",
+            text="🕔 Записаться на удобное время",
             callback_data=callback_keyboard.new(action="navigation_calendar", value="")),
         types.InlineKeyboardButton(text="🔚 В начало",
                                    callback_data=callback_keyboard.new(action="back", value=""))
@@ -53,15 +54,17 @@ def get_keyboard_navigation_calendar(callback_keyboard):
 
 
 def get_keyboard_choose_specialist_before_change_date(callback_keyboard):
-    buttons = [
-        types.InlineKeyboardButton(text=f"✅ Мастер {specialist[0]}",
-                                   callback_data=callback_keyboard.new(action="navigation_calendar", value=specialist[0])),
-        types.InlineKeyboardButton(text=f"✅ Мастер {specialist[1]}",
-                                   callback_data=callback_keyboard.new(action="navigation_calendar", value=specialist[1])),
-
+    buttons = []
+    for master in Employee.objects.all():
+        buttons.append(
+            types.InlineKeyboardButton(text=f"✅ Мастер {master.name}",
+                                       callback_data=callback_keyboard.new(action="navigation_calendar",
+                                                                           value=master.name)),
+        )
+    buttons.append(
         types.InlineKeyboardButton(text="🔚 В начало",
                                    callback_data=callback_keyboard.new(action="back", value=""))
-    ]
+    )
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keyboard.add(*buttons)
     return keyboard
@@ -86,11 +89,11 @@ def get_keyboard_none(callback_keyboard):
 
 def get_keyboard_fab_for_start(callback_keyboard):
     buttons = [
-        types.InlineKeyboardButton(text="Записаться к нам",
+        types.InlineKeyboardButton(text="✏️Записаться к нам",
                                    callback_data=callback_keyboard.new(action="sign_up", value="")),
-        types.InlineKeyboardButton(text="Посмотреть свои записи",
+        types.InlineKeyboardButton(text="📅 Посмотреть свои записи",
                                    callback_data=callback_keyboard.new(action="your_recordings", value="")),
-        types.InlineKeyboardButton(text="О нас",
+        types.InlineKeyboardButton(text="🪪 О нас",
                                    callback_data=callback_keyboard.new(action="about_us", value=""))
     ]
     keyboard = types.InlineKeyboardMarkup(row_width=2)
@@ -117,7 +120,7 @@ def get_keyboard_select_procedures(callback_keyboard):
 def get_keyboard_sign_up(callback_keyboard):
     buttons = [
         types.InlineKeyboardButton(
-            text="Записаться на удобное время",
+            text="🕔 Записаться на удобное время",
             callback_data=callback_keyboard.new(action="navigation_calendar", value="")),
         types.InlineKeyboardButton(text="💁‍♀️Выбрать мастера",
                                    callback_data=callback_keyboard.new(

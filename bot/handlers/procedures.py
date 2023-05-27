@@ -26,12 +26,12 @@ USERS_DATA = {}
 DATE = {}
 
 
-@sync_to_async(thread_sensitive=True)
-def get_all_weekends(date):
-    for weekend in Weekend.objects.filter(not_work_date=date.date()):
-        not_work_date = weekend.not_work_date
-        master = weekend.employee
-        return not_work_date, master
+# @sync_to_async(thread_sensitive=True)
+# def get_all_weekends(date):
+#     for weekend in Weekend.objects.filter(not_work_date=date.date()):
+#         not_work_date = weekend.not_work_date
+#         master = weekend.employee
+#         return not_work_date, master
 
 
 class PersonalData(StatesGroup):
@@ -53,7 +53,8 @@ async def get_name(message: types.Message, state: FSMContext):
 
 
 async def get_phone(message: types.Message, state: FSMContext):
-    telegram_id = message.chat.id
+    telegram_id = message.from_id
+    print('telegram_id', telegram_id)
     user_data = await state.get_data()
     name = user_data['chosen_name']
     phone = message.text
@@ -90,13 +91,38 @@ async def get_phone(message: types.Message, state: FSMContext):
     await state.finish()
 
 
+# @sync_to_async
+# def get_recordings(user_id):
+#     recordings = Appointments.objects.filter(telegram_id=user_id)[:10]
+#     return recordings
+
+
+def get_keyboard_recordings(callback_keyboard):
+    user_id = USERS_DATA.get('user_id')
+    recordings = Appointments.objects.filter(telegram_id=user_id)[:10]
+    buttons = []
+    for recording in recordings:
+        text = f'{recording.procedure.name}_{recording.appointment_date.strftime("%m-%d")}_{recording.appointment_time}'
+        buttons.append(
+            types.InlineKeyboardButton(text=f"{text}",
+                                       callback_data=callback_keyboard.new(action="to_recordings", value='')),
+        )
+    buttons.append(types.InlineKeyboardButton(text="🔚 В начало",
+                                              callback_data=callback_keyboard.new(action="back", value="")))
+    keyboard = types.InlineKeyboardMarkup(row_width=2)
+    keyboard.add(*buttons)
+    return keyboard
+
+
 async def callbacks_change_fab(call: types.CallbackQuery, callback_data: dict):
+    user_id = call.from_user.id
+    USERS_DATA['user_id'] = user_id
     action = callback_data["action"]
     if action == "sign_up":
         USERS_DATA.clear()
         await update_text_fab(call.message, 'Отлично! Выберете процедуру:', get_keyboard_select_procedures)
     elif action == "your_recordings":
-        await update_text_fab(call.message, 'вы выбрали your_recordings', get_keyboard_fab_for_start)
+        await update_text_fab(call.message, '📝 Ваши записи в нашем Сервисе: ', get_keyboard_recordings)
     elif action == "about_us":
         await update_text_fab(call.message, ABOUT_US[action], get_keyboard_change_fab_back)
     await call.answer()
@@ -128,6 +154,24 @@ async def callbacks_back(call: types.CallbackQuery, callback_data: dict):
     await call.answer()
 
 
+def get_keyboard_exclude_specialist(callback_keyboard):
+    employee = USERS_DATA.get('employee')
+    buttons = []
+    for master in Employee.objects.exclude(name=employee):
+        buttons.append(
+            types.InlineKeyboardButton(text=f"✅ Мастер {master.name}",
+                                       callback_data=callback_keyboard.new(action="personal_data",
+                                                                           value=master.name)),
+        )
+    buttons.append(
+        types.InlineKeyboardButton(text="🔚 В начало",
+                                   callback_data=callback_keyboard.new(action="back", value=""))
+    )
+    keyboard = types.InlineKeyboardMarkup(row_width=2)
+    keyboard.add(*buttons)
+    return keyboard
+
+
 async def callbacks_change_date_time(
         call: types.CallbackQuery, callback_data: dict, state: FSMContext,
 ):
@@ -140,7 +184,18 @@ async def callbacks_change_date_time(
         hour = change_time[0]
         minuts = change_time[1]
         USERS_DATA['time'] = f"{hour}:{minuts}"
-        await update_text_fab(call.message, "Выберете Мастера:", get_keyboard_choose_specialist)
+        date = USERS_DATA['date']
+        not_work_date = USERS_DATA['not_work_date']
+        employee = USERS_DATA['employee']
+        if not_work_date == date:
+            async for master in Employee.objects.exclude(name=employee):
+                master_data = master
+                print(master_data)
+
+            text = f"У Мастера: {employee} - выходной. Выберете Мастера:"
+            await update_text_fab(call.message, text, get_keyboard_exclude_specialist)
+        else:
+            await update_text_fab(call.message, "Выберете Мастера:", get_keyboard_choose_specialist)
 
     elif action == "choose_specialist_before_change_date":
         await update_text_fab(call.message, "Выберете Мастера:", get_keyboard_choose_specialist_before_change_date)
@@ -184,10 +239,7 @@ async def nav_cal_handler(callback: types.CallbackQuery, callback_data: dict):
 
 async def process_simple_calendar(callback_query: CallbackQuery, callback_data: dict):
     selected, date = await SimpleCalendar().process_selection(callback_query, callback_data)
-    print('selected', selected)
-    # callback_query.data['selected'] = selected
     if selected:
-        # not_work_date, master = get_all_weekends(date) or None
         w = []
         async for weekend in Weekend.objects.filter(not_work_date=date.date()):
             w.append(weekend)
@@ -199,7 +251,8 @@ async def process_simple_calendar(callback_query: CallbackQuery, callback_data: 
             not_work_date = None
             employee = None
         USERS_DATA['date'] = date.date()
-        USERS_DATA['today'] = today.date()
+        USERS_DATA['not_work_date'] = not_work_date
+        USERS_DATA['employee'] = employee
         print('USERS_DATA[date]', USERS_DATA['date'], '\n', USERS_DATA)
         if date.date() < today.date():
             text = "🙅‍♀️Нельзя вернуться в прошлое.\n" \
