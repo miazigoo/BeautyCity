@@ -5,7 +5,8 @@ from .models import (
     Employee,
     Procedures,
     Appointments,
-    Weekend
+    Weekend,
+    AboutUs
 )
 
 
@@ -28,4 +29,4 @@ class AppointmentsAdmin(admin.ModelAdmin):
 admin.site.register(Salons)
 admin.site.register(Procedures)
 admin.site.register(Weekend)
-# admin.site.register(Appointments)
+admin.site.register(AboutUs)

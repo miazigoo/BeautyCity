@@ -128,3 +128,24 @@ class Appointments(models.Model):
     class Meta:
         verbose_name = "Запись к мастеру"
         verbose_name_plural = "Записи к мастерам"
+
+
+class AboutUs(models.Model):
+    salon = models.ForeignKey(
+        Salons,
+        on_delete=models.CASCADE,
+        verbose_name="Салон",
+        related_name="salon_about",
+        null=True, blank=True,
+    )
+    descriptions = models.TextField(
+        verbose_name="Описание О Нас",
+        null=True, blank=True,
+    )
+
+    def __str__(self):
+        return f"{self.salon.name}  {self.descriptions[:30]}"
+
+    class Meta:
+        verbose_name = "О Нас"
+        verbose_name_plural = "О Нас"

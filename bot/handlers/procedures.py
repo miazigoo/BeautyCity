@@ -1,6 +1,6 @@
 import os
 from contextlib import suppress
-from bot.models import Weekend, Salons, Appointments, Employee, Procedures
+from bot.models import Weekend, Salons, Appointments, Employee, Procedures, AboutUs
 
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import CallbackQuery
@@ -13,8 +13,6 @@ from aiogram.utils.callback_data import CallbackData
 from aiogram.utils.exceptions import MessageNotModified
 from bot.text.start_text import START_TEXT
 from asgiref.sync import sync_to_async
-from bot.text.about_us import ABOUT_US
-# from channels.db import database_sync_to_async
 from django.utils.timezone import localtime
 
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
@@ -23,12 +21,11 @@ callback_keyboard = CallbackData("procedures", "action", "value")
 today = datetime.datetime.today()
 
 
-# @sync_to_async(thread_sensitive=True)
-# def get_all_weekends(date):
-#     for weekend in Weekend.objects.filter(not_work_date=date.date()):
-#         not_work_date = weekend.not_work_date
-#         master = weekend.employee
-#         return not_work_date, master
+@sync_to_async()
+def get_description_about_us():
+    about_us = AboutUs.objects.filter(pk=1)[0]
+    text = about_us.descriptions
+    return text
 
 
 class PersonalData(StatesGroup):
@@ -90,12 +87,6 @@ async def get_phone(message: types.Message, state: FSMContext):
     await state.finish()
 
 
-# @sync_to_async
-# def get_recordings(user_id):
-#     recordings = Appointments.objects.filter(telegram_id=user_id)[:10]
-#     return recordings
-
-
 async def callbacks_change_fab(call: types.CallbackQuery, callback_data: dict):
     user_id = call.from_user.id
     USERS_DATA['user_id'] = user_id
@@ -106,7 +97,8 @@ async def callbacks_change_fab(call: types.CallbackQuery, callback_data: dict):
     elif action == "your_recordings":
         await update_text_fab(call.message, '📝 Ваши записи в нашем Сервисе: ', get_keyboard_recordings)
     elif action == "about_us":
-        await update_text_fab(call.message, ABOUT_US[action], get_keyboard_change_fab_back)
+        descriptions = await get_description_about_us()
+        await update_text_fab(call.message, descriptions, get_keyboard_change_fab_back)
     await call.answer()
 
 
