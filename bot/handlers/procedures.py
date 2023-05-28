@@ -18,6 +18,7 @@ from bot.text.about_us import ABOUT_US
 from asgiref.sync import sync_to_async
 from django.utils.timezone import localtime
 
+
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 
 callback_keyboard = CallbackData("procedures", "action", "value")
@@ -55,7 +56,6 @@ async def get_name(message: types.Message, state: FSMContext):
 
 async def get_phone(message: types.Message, state: FSMContext):
     telegram_id = message.from_id
-    print('telegram_id', telegram_id)
     user_data = await state.get_data()
     name = user_data['chosen_name']
     phone = message.text
@@ -89,7 +89,7 @@ async def get_phone(message: types.Message, state: FSMContext):
         f"Спасибо за запись {name}! До встречи в <u>{admission_date} {time_of_admission}</u>\n"
         f"На процедуре {procedures}, у Мастера: {master_data}\n"
         f"По адресу: {adress}",
-        reply_markup=get_keyboard_fab_for_start(callback_keyboard)
+        reply_markup=get_keyboard_start_payment(callback_keyboard)
     )
     await state.finish()
 

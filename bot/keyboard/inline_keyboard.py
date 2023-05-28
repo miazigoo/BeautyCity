@@ -79,6 +79,24 @@ def get_keyboard_fab_for_start(callback_keyboard):
     return keyboard
 
 
+def get_keyboard_start_payment(callback_keyboard):
+    buttons = [
+        types.InlineKeyboardButton(text="💰 Оплатить онлайн",
+                                   url="http://127.0.0.1:8000"),
+        types.InlineKeyboardButton(text="✏️Записаться к нам",
+                                   callback_data=callback_keyboard.new(action="sign_up", value="")),
+        types.InlineKeyboardButton(text="📅 Посмотреть свои записи",
+                                   callback_data=callback_keyboard.new(action="your_recordings", value="")),
+        types.InlineKeyboardButton(text="🪪 О нас",
+                                   callback_data=callback_keyboard.new(action="about_us", value="")),
+        types.InlineKeyboardButton(text="☎️Позвонить нам",
+                                   callback_data=callback_keyboard.new(action="call_us", value=""))
+    ]
+    keyboard = types.InlineKeyboardMarkup(row_width=2)
+    keyboard.add(*buttons)
+    return keyboard
+
+
 def get_keyboard_select_procedures(callback_keyboard):
     procedures = Procedures.objects.all()
     buttons = []
