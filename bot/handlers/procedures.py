@@ -1,5 +1,7 @@
 import os
 from contextlib import suppress
+
+from bot.handlers.common import get_start_text
 from bot.models import Weekend, Salons, Appointments, Employee, Procedures, AboutUs
 
 from aiogram.dispatcher.filters.state import StatesGroup, State
@@ -11,7 +13,8 @@ from aiogram import Dispatcher, types
 from aiogram.dispatcher import FSMContext
 from aiogram.utils.callback_data import CallbackData
 from aiogram.utils.exceptions import MessageNotModified
-from bot.text.start_text import START_TEXT
+
+from bot.text.about_us import ABOUT_US
 from asgiref.sync import sync_to_async
 from django.utils.timezone import localtime
 
@@ -23,8 +26,12 @@ today = datetime.datetime.today()
 
 @sync_to_async()
 def get_description_about_us():
-    about_us = AboutUs.objects.filter(pk=1)[0]
-    text = about_us.descriptions
+    about_us = AboutUs.objects.filter(pk=1)
+    if about_us:
+        text = about_us[0].descriptions
+    else:
+        text = ABOUT_US['about_us']
+
     return text
 
 
@@ -115,7 +122,8 @@ async def callbacks_back(call: types.CallbackQuery, callback_data: dict):
     action = callback_data["action"]
     if action == "back":
         USERS_DATA.clear()
-        await update_text_fab(call.message, START_TEXT['start_text'], get_keyboard_fab_for_start)
+        text = await get_start_text()
+        await update_text_fab(call.message, text, get_keyboard_fab_for_start)
     await call.answer()
 
 

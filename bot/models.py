@@ -149,3 +149,17 @@ class AboutUs(models.Model):
     class Meta:
         verbose_name = "О Нас"
         verbose_name_plural = "О Нас"
+
+
+class StartText(models.Model):
+    descriptions = models.TextField(
+        verbose_name="Стартовый текст",
+        null=True, blank=True,
+    )
+
+    def __str__(self):
+        return f"{self.descriptions[:30]}"
+
+    class Meta:
+        verbose_name = "Стартовый текст"
+        verbose_name_plural = "Стартовые текста"
