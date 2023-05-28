@@ -63,6 +63,7 @@ async def get_phone(message: types.Message, state: FSMContext):
     master_data = USERS_DATA.get('specialist')
     adress = ''
     salon = None
+    admission_date = date_of_admission.strftime("%m.%d")
     async for procedures in Procedures.objects.filter(pk=procedures_data):
         procedures_data = procedures
     async for master in Employee.objects.filter(pk=master_data):
@@ -81,9 +82,10 @@ async def get_phone(message: types.Message, state: FSMContext):
         master=master_data
     )
     await message.answer(
-        f"Спасибо за запись {name}! До встречи {date_of_admission} {time_of_admission}\n"
+        f"Спасибо за запись {name}! До встречи в <u>{admission_date} {time_of_admission}</u>\n"
         f"На процедуре {procedures}, у Мастера: {master_data}\n"
-        f"{adress}"
+        f"По адресу: {adress}",
+        reply_markup=get_keyboard_fab_for_start(callback_keyboard)
     )
     await state.finish()
 
@@ -223,7 +225,6 @@ async def nav_cal_handler(callback: types.CallbackQuery, callback_data: dict):
                                              reply_markup=await SimpleCalendar().start_calendar())
         else:
             print('callback_data["value"]', callback_data["value"])
-            # USERS_DATA['specialist'] = callback_data["value"]
             await callback.message.edit_text(
                 "📅 Выберите удобный для вас день: await SimpleCalendar().start_calendar()",
                 reply_markup=await SimpleCalendar().start_calendar())

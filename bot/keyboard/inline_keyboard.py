@@ -19,7 +19,6 @@ SET_TIME = [
     "14_00", "14_30", "15_00", "15_30",
     "16_00", "16_30", "17_00", "17_30",
     "18_00", "18_30", "19_00", "19_30",
-    "20_00", "20_30"
 ]
 
 USERS_DATA = {}
@@ -126,11 +125,17 @@ def get_keyboard_choose_specialist_before_change_date(callback_keyboard):
 
 def get_keyboard_choose_specialist(callback_keyboard):
     buttons = []
-    users_time = datetime.datetime.strptime(USERS_DATA["time"], "%H:%M").time()
-    overlay = Appointments.objects.filter(appointment_date=USERS_DATA["date"], appointment_time=users_time)[0]
-    for master in Employee.objects.filter(procedure__pk=int(USERS_DATA["procedures"])):
-        if master == overlay.master:
-            continue
+    date = USERS_DATA.get("date")
+    users_time = datetime.datetime.strptime(USERS_DATA.get("time"), "%H:%M").time()
+    overlays = Appointments.objects.filter(appointment_date=date, appointment_time=users_time)
+    if overlays:
+        overlay = overlays[0]
+    else:
+        overlay = None
+    for master in Employee.objects.filter(procedure__pk=int(USERS_DATA.get("procedures"))):
+        if overlay:
+            if master == overlay.master:
+                continue
         buttons.append(types.InlineKeyboardButton(text=f"✅ Мастер {master.name}",
                                                   callback_data=callback_keyboard.new(action="personal_data",
                                                                                       value=master.pk)))
@@ -168,7 +173,7 @@ def get_keyboard_sign_up(callback_keyboard):
 
 def get_set_time():
     set_time = []
-    if USERS_DATA["date"] == datetime.datetime.today().date():
+    if USERS_DATA.get("date") == datetime.datetime.today().date():
         for slot in SET_TIME:
             print(SET_TIME)
             print(slot)
