@@ -1,7 +1,7 @@
 import datetime
 
 from aiogram import types
-from bot.models import Weekend, Salons, Appointments, Employee, Procedures
+from bot.models import Weekend, Salons, Appointments, Employee, Procedures, Client
 
 # from django.utils.timezone import localtime
 
@@ -268,7 +268,8 @@ def get_keyboard_personal_data(callback_keyboard):
 
 def get_keyboard_recordings(callback_keyboard):
     user_id = USERS_DATA.get('user_id')
-    recordings = Appointments.objects.filter(telegram_id=user_id)[:10]
+    client = Client.objects.get(telegram_id=user_id)
+    recordings = Appointments.objects.filter(client=client)[:10]
     buttons = []
     for recording in recordings:
         text = f'{recording.procedure.name}_{recording.appointment_date.strftime("%m-%d")}_{recording.appointment_time}'
