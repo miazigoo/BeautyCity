@@ -5,13 +5,32 @@
 
 ### Как установить
 
-* Скачать [этот script](https://github.com/miazigoo/Parsing_online_Library)
+* Скачать [этот script](https://github.com/miazigoo/BeautyCity)
 
 **Python3 уже должен быть установлен**. 
 Используйте `pip` (или `pip3`, если возникает конфликт с Python2) для установки зависимостей:
-```properties
+```sh
 pip install -r requirements.txt
 ```
+Создайте базу данных SQLite:
+
+```sh
+python manage.py makemigrations
+python manage.py migrate
+```
+
+Создайте супер пользователя (администратора) командой:
+```sh
+python manage.py createcuperuser
+```
+
+Запустить сервер:
+```sh
+python manage.py runserver
+```
+1. Перейти во вкладку `/admin`.
+2. Для корректной работы в БД должен существовать сервис, мастера, услуги, ценник, быть прописан хотя бы 1 выходной.
+
 
 ### Как запустить:
 
@@ -20,7 +39,10 @@ pip install -r requirements.txt
 - `TELEGRAM_BOT_API_KEY` — Получите токен у [@BotFather](https://t.me/BotFather), вставте в `.env` например: `TELEGRAM_BOT_API_KEY=588535421721:AAFYtrO5YJhpUEXgyw6r1tr5fqZYY8ogS45I2E`.
 - `TELEGRAM_ADMIN_ID` - Получите свой ID у [@userinfobot](https://t.me/userinfobot)
 
-Запуск производится командой `python manage.py bot`
+Запуск производится командой: 
+```sh
+python manage.py bot
+```
 
 
 ### Цель проекта

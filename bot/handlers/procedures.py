@@ -22,6 +22,7 @@ os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 callback_keyboard = CallbackData("procedures", "action", "value")
 today = datetime.datetime.today()
 
+
 # @sync_to_async(thread_sensitive=True)
 # def get_all_weekends(date):
 #     for weekend in Weekend.objects.filter(not_work_date=date.date()):
@@ -112,7 +113,7 @@ async def callbacks_change_procedures(call: types.CallbackQuery, callback_data: 
     procedure = Procedures.objects.get(pk=int(value))
     USERS_DATA['procedures'] = procedure.pk
     await update_text_fab(call.message,
-                    f'Процедура "{procedure.name}" стоит от {procedure.price} руб.', get_keyboard_sign_up)
+                          f'Процедура "{procedure.name}" стоит от {procedure.price} руб.', get_keyboard_sign_up)
     await call.answer()
 
 
@@ -132,7 +133,8 @@ def get_keyboard_exclude_specialist(callback_keyboard):
         print("Принт 2")
         print(USERS_DATA["time"])
         print(type(USERS_DATA["time"]))
-        if master in Appointments.objects.filter(appointment_date=USERS_DATA["date"], appointment_time=USERS_DATA["time"]):
+        if master in Appointments.objects.filter(appointment_date=USERS_DATA["date"],
+                                                 appointment_time=USERS_DATA["time"]):
             continue
         buttons.append(
             types.InlineKeyboardButton(text=f"✅ Мастер {master.name}",
@@ -145,6 +147,10 @@ def get_keyboard_exclude_specialist(callback_keyboard):
     buttons.append(
         types.InlineKeyboardButton(text=f"{add_text} 🔚 В начало",
                                    callback_data=callback_keyboard.new(action="back", value=""))
+    )
+    buttons.append(
+        types.InlineKeyboardButton(text="☎️Позвонить нам",
+                                   callback_data=callback_keyboard.new(action="call_us", value=""))
     )
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keyboard.add(*buttons)
@@ -198,6 +204,14 @@ async def callbacks_change_date_time(
         await update_text_fab(call.message, text, get_keyboard_none)
         await state.set_state(PersonalData.waiting_for_get_name.state)
     await call.answer()
+
+
+async def call_us(callback: types.CallbackQuery, callback_data: dict):
+    action = callback_data['action']
+    if action == 'call_us':
+        text = 'Рады звонку в любое время – 8 800 555 35 35'
+        await update_text_fab(callback.message, text, get_keyboard_fab_for_start)
+    await callback.answer()
 
 
 async def nav_cal_handler(callback: types.CallbackQuery, callback_data: dict):
@@ -303,5 +317,12 @@ def register_handlers_procedures(dp: Dispatcher):
             "about_us",
             "your_recordings",
             "sign_up",
+        ]
+        ))
+
+    dp.register_callback_query_handler(
+        call_us,
+        callback_keyboard.filter(action=[
+            "call_us",
         ]
         ))
