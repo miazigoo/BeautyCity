@@ -6,7 +6,7 @@ from .models import (
     Procedures,
     Appointments,
     Weekend,
-    AboutUs, StartText
+    AboutUs, StartText, Client
 )
 
 
@@ -31,3 +31,4 @@ admin.site.register(Procedures)
 admin.site.register(Weekend)
 admin.site.register(AboutUs)
 admin.site.register(StartText)
+admin.site.register(Client)

@@ -2,7 +2,7 @@ import os
 from contextlib import suppress
 
 from bot.handlers.common import get_start_text
-from bot.models import Weekend, Salons, Appointments, Employee, Procedures, AboutUs
+from bot.models import Weekend, Salons, Appointments, Employee, Procedures, AboutUs, Client
 
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.types import CallbackQuery
@@ -17,7 +17,6 @@ from aiogram.utils.exceptions import MessageNotModified
 from bot.text.about_us import ABOUT_US
 from asgiref.sync import sync_to_async
 from django.utils.timezone import localtime
-
 
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 
@@ -54,6 +53,21 @@ async def get_name(message: types.Message, state: FSMContext):
     await message.answer("Теперь введите номер телефона в формате\n79995553388 :")
 
 
+@sync_to_async()
+def get_and_create_client():
+    client, created = Client.objects.get_or_create(
+        telegram_id=USERS_DATA['telegram_id'],
+        defaults={
+            'name': USERS_DATA['name'],
+            'phone_number': USERS_DATA['phone'],
+        }
+    )
+    if created:
+        client = Client.objects.filter(telegram_id=USERS_DATA['telegram_id'])[0]
+
+    return client
+
+
 async def get_phone(message: types.Message, state: FSMContext):
     telegram_id = message.from_id
     user_data = await state.get_data()
@@ -61,6 +75,7 @@ async def get_phone(message: types.Message, state: FSMContext):
     phone = message.text
     USERS_DATA['name'] = name
     USERS_DATA['phone'] = phone
+    USERS_DATA['telegram_id'] = telegram_id
     date_of_admission = USERS_DATA['date']
     time_of_admission = USERS_DATA['time']
     procedures_data = USERS_DATA.get('procedures')
@@ -75,10 +90,9 @@ async def get_phone(message: types.Message, state: FSMContext):
     async for salon in Salons.objects.filter(pk=1):
         adress = salon.address
         salon = salon
+    client = await get_and_create_client()
     await Appointments.objects.acreate(
-        telegram_id=telegram_id,
-        name=USERS_DATA['name'],
-        phone_number=phone,
+        client=client,
         salon=salon,
         appointment_date=date_of_admission,
         appointment_time=time_of_admission,

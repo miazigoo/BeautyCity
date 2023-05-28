@@ -81,8 +81,8 @@ class Weekend(models.Model):
         verbose_name_plural = 'Выходные'
 
 
-class Appointments(models.Model):
-    telegram_id = models.IntegerField()
+class Client(models.Model):
+    telegram_id = models.IntegerField(unique=True)
     name = models.CharField(
         max_length=256,
         null=True,
@@ -94,6 +94,22 @@ class Appointments(models.Model):
         null=True,
         blank=True,
         verbose_name="Phone Number"
+    )
+
+    def __str__(self):
+        return f"{self.name} {self.phone_number}"
+
+    class Meta:
+        verbose_name = "Клиент"
+        verbose_name_plural = "Клиенты"
+
+
+class Appointments(models.Model):
+    client = models.ForeignKey(
+        Client,
+        on_delete=models.CASCADE,
+        verbose_name="Клиент",
+        related_name="client_appoinments",
     )
     salon = models.ForeignKey(
         Salons,
