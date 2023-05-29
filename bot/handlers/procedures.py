@@ -285,6 +285,16 @@ async def process_simple_calendar(callback_query: CallbackQuery, callback_data: 
     await callback_query.answer()
 
 
+async def to_recordings(callback: types.CallbackQuery, callback_data: dict):
+    action = callback_data['action']
+    values = callback_data['value']
+    if action == 'to_recordings':
+        text = values.replace('_', ' ').split(' ')
+        text_value = f'Ваша запись: {text[0]} {text[1]} {text[2]}:{text[3]}\n🧚‍♀️Не опаздывайте'
+        await update_text_fab(callback.message,
+                              f'{text_value}', get_keyboard_fab_for_start)
+
+
 def register_handlers_procedures(dp: Dispatcher):
     dp.register_callback_query_handler(
         nav_cal_handler,
@@ -339,5 +349,12 @@ def register_handlers_procedures(dp: Dispatcher):
         call_us,
         callback_keyboard.filter(action=[
             "call_us",
+        ]
+        ))
+
+    dp.register_callback_query_handler(
+        to_recordings,
+        callback_keyboard.filter(action=[
+            "to_recordings",
         ]
         ))

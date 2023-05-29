@@ -277,9 +277,10 @@ def get_keyboard_recordings(callback_keyboard):
     buttons = []
     for recording in recordings:
         text = f'{recording.procedure.name}_{recording.appointment_date.strftime("%m-%d")}_{recording.appointment_time}'
+        text_for_value = text.replace(':', '_')
         buttons.append(
             types.InlineKeyboardButton(text=f"{text}",
-                                       callback_data=callback_keyboard.new(action="to_recordings", value='')),
+                                       callback_data=callback_keyboard.new(action="to_recordings", value=f'{text_for_value}')),
         )
     buttons.append(types.InlineKeyboardButton(text="🔚 В начало",
                                               callback_data=callback_keyboard.new(action="back", value="")))
