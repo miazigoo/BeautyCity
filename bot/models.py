@@ -1,4 +1,6 @@
+
 from django.db import models
+from django.utils import timezone
 
 
 class Salons(models.Model):
@@ -179,3 +181,22 @@ class StartText(models.Model):
     class Meta:
         verbose_name = "Стартовый текст"
         verbose_name_plural = "Стартовые текста"
+
+
+class Comment(models.Model):
+    master = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='comments')
+    author = models.CharField(max_length=200)
+    text = models.TextField()
+    created_date = models.DateTimeField(default=timezone.now)
+    approved_comment = models.BooleanField(default=True)
+
+    def approve(self):
+        self.approved_comment = True
+        self.save()
+
+    def __str__(self):
+        return self.text
+
+    class Meta:
+        verbose_name = "Комментарий"
+        verbose_name_plural = "Комментарии"

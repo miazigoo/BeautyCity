@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+ {% block content %}
+   <div class="row align-items-center">
+    <div class="col">
+    </div>
+   <div class="col">
+    <hr>
+        <a class="btn btn-default" href="{% url 'add_comment' %}">Сотворить новый коммент ✅</a>
+        {% for comment in comments %}
+            <div class="comment">
+                <div class="date">
+                    <span>{{ comment.created_date }}</span>
+                </div>
+                <div class="master">
+                    <strong>Вашим мастером был\а: {{ comment.master }}</strong>
+                </div>
+                <span><u>Комментарий от: {{ comment.author }}</u></span>
+                <p>{{ comment.text|linebreaks }}</p>
+            </div>
+        {% empty %}
+            <p>No comments here yet :(</p>
+        {% endfor %}
+    </hr>
+   </div>
+   <div class="col">
+    </div>
+   </div>
+ {% endblock content %}

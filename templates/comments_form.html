@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <form method="POST" class="post-form">{% csrf_token %}
+      <div class="row align-items-center">
+          <div class="col">
+          </div>
+        <div class="col">
+            <h1>New comment</h1>
+          <div class="input-group">
+            {{ form.as_p }}
+          </div>
+            <button type="submit" class="save btn btn-default">Отправить</button>
+        </div>
+          <div class="col">
+          </div>
+      </div>
+    </form>
+
+{% endblock content %}

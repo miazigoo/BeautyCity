@@ -72,7 +72,9 @@ def get_keyboard_fab_for_start(callback_keyboard):
         types.InlineKeyboardButton(text="🪪 О нас",
                                    callback_data=callback_keyboard.new(action="about_us", value="")),
         types.InlineKeyboardButton(text="☎️Позвонить нам",
-                                   callback_data=callback_keyboard.new(action="call_us", value=""))
+                                   callback_data=callback_keyboard.new(action="call_us", value="")),
+        types.InlineKeyboardButton(text="💬 Оставить комментарий",
+                                   url="http://127.0.0.1:8000/comments")
     ]
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keyboard.add(*buttons)
@@ -82,7 +84,7 @@ def get_keyboard_fab_for_start(callback_keyboard):
 def get_keyboard_start_payment(callback_keyboard):
     buttons = [
         types.InlineKeyboardButton(text="💰 Оплатить онлайн",
-                                   url="http://127.0.0.1:8000"),
+                                   url="http://127.0.0.1:8000/pay"),
         types.InlineKeyboardButton(text="✏️Записаться к нам",
                                    callback_data=callback_keyboard.new(action="sign_up", value="")),
         types.InlineKeyboardButton(text="📅 Посмотреть свои записи",
@@ -90,7 +92,9 @@ def get_keyboard_start_payment(callback_keyboard):
         types.InlineKeyboardButton(text="🪪 О нас",
                                    callback_data=callback_keyboard.new(action="about_us", value="")),
         types.InlineKeyboardButton(text="☎️Позвонить нам",
-                                   callback_data=callback_keyboard.new(action="call_us", value=""))
+                                   callback_data=callback_keyboard.new(action="call_us", value="")),
+        types.InlineKeyboardButton(text="💬 Оставить комментарий",
+                                   url="http://127.0.0.1:8000/comments")
     ]
     keyboard = types.InlineKeyboardMarkup(row_width=2)
     keyboard.add(*buttons)
